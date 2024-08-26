@@ -29,10 +29,6 @@ namespace BoxPlugin
         {
             RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt); 
         }
-        public override void Unload(bool hotReload)
-        {
-            RemoveListener(OnPlayerHurt);
-        }
 
         [ConsoleCommand("css_box")]
         public void OnBoxCommand(CCSPlayerController player, CommandInfo info)
