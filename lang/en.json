@@ -1,0 +1,6 @@
+{
+  "tag.prefix": "{red}[BOX]{default} ",
+  "t.warning": "Can't use this command as a {yellow}terrorist{default}!",
+  "box.enabled": "Box mode has been {lime}enabled!",
+  "box.disabled": "Box mode has been {red}disabled!"
+}

@@ -1,0 +1,6 @@
+{
+  "tag.prefix": "{red}[BOX]{default} ",
+  "t.warning": "Nu poti folosi aceasta comanda ca {yellow}terrorist{default}!",
+  "box.enabled": "Modul box a fost {lime}activat!",
+  "box.disabled": "Modul box a fost {red}dezactivat!"
+}
