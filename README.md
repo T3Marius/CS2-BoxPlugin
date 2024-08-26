@@ -8,6 +8,7 @@ css_box (starts box for Terrorist team. Use it again to stop the box)
 # Config
 ```
 {
+   //use this addon to use the sound "3309904748"
   "DingSound": "sounds/sankysounds/box.vsnd_c",
   "ConfigVersion": 1
 }
