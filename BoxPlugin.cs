@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
@@ -29,6 +29,10 @@ namespace BoxPlugin
         {
             RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt); 
         }
+        public override void Unload(bool hotReload)
+        {
+            RemoveListener(OnPlayerHurt);
+        }
 
         [ConsoleCommand("css_box")]
         public void OnBoxCommand(CCSPlayerController player, CommandInfo info)
@@ -39,8 +43,13 @@ namespace BoxPlugin
           
                 if (isBoxModeActive)
                 {
-                    Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["box.enabled"]);
-                    player.ExecuteClientCommand($"play {Config.sound}");
+                    Utilities.GetPlayers().ForEach(player =>
+                    {
+                        {
+                            Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["box.enabled"]);
+                            player.ExecuteClientCommand($"play {Config.sound}");
+                        }
+                    });
                 }
                 else
                 {
@@ -82,7 +91,13 @@ namespace BoxPlugin
         {
             if (player != null && player.Team == CsTeam.CounterTerrorist)
             {
-                player.ExecuteClientCommand($"play {Config.sound}");
+                Utilities.GetPlayers().ForEach(p =>
+                {
+                    {
+                        Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["box.enabled"]);
+                        player.ExecuteClientCommand($"play {Config.sound}");
+                    }
+                });
             }
             else if (player != null && player.Team == CsTeam.Terrorist)
             {
