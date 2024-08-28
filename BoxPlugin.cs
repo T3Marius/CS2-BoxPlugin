@@ -1,85 +1,87 @@
+﻿using BoxConfig;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
-using System.Text.Json.Serialization;
+using static BoxConfig.Config_Config;
 
 namespace BoxPlugin
 {
-    public class PluginConfig : BasePluginConfig
-    {
-        [JsonPropertyName("DingSound")]
-        public string sound { get; set; } = "sounds/sankysounds/box.vsnd_c";
-    }
-    public class BoxPlugin : BasePlugin, IPluginConfig<PluginConfig>
+    public class BoxPlugin : BasePlugin
     {
         public override string ModuleName => "cs2-box";
         public override string ModuleAuthor => "T3Marius";
         public override string ModuleVersion => "1.0.0";
-        public PluginConfig Config { get; set; } = new PluginConfig();
-        public void OnConfigParsed(PluginConfig config)
-        {
-            Config = config;
-        }
 
-        private bool isBoxModeActive = false;
+        private bool isFriendlyFireForTerroristsActive = false;
 
         public override void Load(bool hotReload)
         {
-            RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt); 
+            VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
+            Config_Config.Load();
+        }
+        public override void Unload(bool hotReload)
+        {
+            VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage, HookMode.Pre);
         }
 
         [ConsoleCommand("css_box")]
         public void OnBoxCommand(CCSPlayerController player, CommandInfo info)
         {
+            // Ensure only Counter-Terrorists can use this command
             if (player != null && player.Team == CsTeam.CounterTerrorist)
-            {               
-                isBoxModeActive = !isBoxModeActive;
-          
-                if (isBoxModeActive)
+            {
+                // Toggle the friendly fire state for Terrorists
+                isFriendlyFireForTerroristsActive = !isFriendlyFireForTerroristsActive;
+
+                if (isFriendlyFireForTerroristsActive)
                 {
-                    Utilities.GetPlayers().ForEach(player =>
-                    {
-                        {
-                            Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["box.enabled"]);
-                            player.ExecuteClientCommand($"play {Config.sound}");
-                        }
-                    });
+                    ConVar.Find("mp_teammates_are_enemies")!.GetPrimitiveValue<bool>() = true;
+                    Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["ff_for_terrorists.enabled"]);
+                    Utilities.GetPlayers().ForEach(p => p.ExecuteClientCommand($"play {Config.Sound}"));
                 }
                 else
                 {
-                    Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["box.disabled"]);
+                    Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["ff_for_terrorists.disabled"]);
+                    ConVar.Find("mp_teammates_are_enemies")!.GetPrimitiveValue<bool>() = false;
                 }
             }
             else if (player != null && player.Team == CsTeam.Terrorist)
             {
-                
                 player.PrintToChat(Localizer["tag.prefix"] + Localizer["t.warning"]);
             }
         }
 
-        private HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
+        public HookResult OnTakeDamage(DynamicHook hook)
         {
-            var attacker = @event.Attacker;
-            var victim = @event.Userid;
+            CEntityInstance entity = hook.GetParam<CEntityInstance>(0);
+            CTakeDamageInfo info = hook.GetParam<CTakeDamageInfo>(1);
 
-            if (isBoxModeActive)
+            var ability = info.Ability.Value;
+            if (ability == null)
             {
-                
-                if (attacker != null && victim != null &&
-                    attacker.Team == CsTeam.Terrorist &&
-                    victim.Team == CsTeam.Terrorist)
-                {
-                    return HookResult.Continue;  
-                }
-                else
-                {
-                    return HookResult.Handled;  
-                }
+                return HookResult.Continue;
             }
 
-            return HookResult.Continue; 
+            if (entity.DesignerName != "player")
+            {
+                return HookResult.Continue;
+            }
+
+            var attacker = new CCSPlayerController(ability.Handle);
+            var victim = new CCSPlayerController(entity.Handle);
+
+            // Handle friendly fire logic for Terrorists only
+            if (isFriendlyFireForTerroristsActive && attacker.Team == victim.Team && victim.Team != CsTeam.Terrorist)
+            {
+                return HookResult.Handled;
+            }
+
+            return HookResult.Continue;
         }
 
         [ConsoleCommand("css_ding")]
@@ -89,10 +91,8 @@ namespace BoxPlugin
             {
                 Utilities.GetPlayers().ForEach(p =>
                 {
-                    {
-                        Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["box.enabled"]);
-                        player.ExecuteClientCommand($"play {Config.sound}");
-                    }
+                    Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["box.enabled"]);
+                    p.ExecuteClientCommand($"play {Config.Sound}");
                 });
             }
             else if (player != null && player.Team == CsTeam.Terrorist)
