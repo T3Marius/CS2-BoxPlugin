@@ -91,7 +91,6 @@ namespace BoxPlugin
             {
                 Utilities.GetPlayers().ForEach(p =>
                 {
-                    Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["box.enabled"]);
                     p.ExecuteClientCommand($"play {Config.Sound}");
                 });
             }
