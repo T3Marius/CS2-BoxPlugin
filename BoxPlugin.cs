@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory;
@@ -19,6 +20,8 @@ namespace BoxPlugin
 
         private bool isFriendlyFireForTerroristsActive = false;
 
+        public static PluginCapability<IWardenService> wardenService { get; set; } = new("jailbreak:warden_service");
+
         public override void Load(bool hotReload)
         {
             VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
@@ -32,10 +35,10 @@ namespace BoxPlugin
         [ConsoleCommand("css_box")]
         public void OnBoxCommand(CCSPlayerController player, CommandInfo info)
         {
-            // Ensure only Counter-Terrorists can use this command
-            if (player != null && player.Team == CsTeam.CounterTerrorist)
+            var service = wardenService.Get();
+
+            if (service != null && player != null && service.IsWarden(player))
             {
-                // Toggle the friendly fire state for Terrorists
                 isFriendlyFireForTerroristsActive = !isFriendlyFireForTerroristsActive;
 
                 if (isFriendlyFireForTerroristsActive)
@@ -48,9 +51,9 @@ namespace BoxPlugin
                 {
                     Server.PrintToChatAll(Localizer["tag.prefix"] + Localizer["ff_for_terrorists.disabled"]);
                     ConVar.Find("mp_teammates_are_enemies")!.GetPrimitiveValue<bool>() = false;
-                }
+                }               
             }
-            else if (player != null && player.Team == CsTeam.Terrorist)
+            else if (player != null && (player.Team == CsTeam.Terrorist || player.Team == CsTeam.CounterTerrorist))
             {
                 player.PrintToChat(Localizer["tag.prefix"] + Localizer["t.warning"]);
             }
@@ -87,14 +90,16 @@ namespace BoxPlugin
         [ConsoleCommand("css_ding")]
         public void OnDingCommand(CCSPlayerController player, CommandInfo info)
         {
-            if (player != null && player.Team == CsTeam.CounterTerrorist)
+            var service = wardenService.Get();
+
+            if (service != null && player != null && service.IsWarden(player))
             {
                 Utilities.GetPlayers().ForEach(p =>
                 {
                     p.ExecuteClientCommand($"play {Config.Sound}");
                 });
             }
-            else if (player != null && player.Team == CsTeam.Terrorist)
+            else if (player != null && (player.Team == CsTeam.Terrorist || player.Team == CsTeam.CounterTerrorist))
             {
                 player.PrintToChat(Localizer["tag.prefix"] + Localizer["t.warning"]);
             }

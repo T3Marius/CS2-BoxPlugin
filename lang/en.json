@@ -1,6 +1,6 @@
 {
   "tag.prefix": "{red}[BOX]{default} ",
-  "t.warning": "Can't use this command as a {yellow}terrorist{default}!",
+  "t.warning": "You need to be {green}Warden{default} in order to use this command!",
   "ff_for_terrorists.enabled": "Box mode has been {lime}enabled!",
   "ff_for_terrorists.disabled": "Box mode has been {red}disabled!"
 }

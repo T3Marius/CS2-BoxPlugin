@@ -16,6 +16,9 @@
 
 	<ItemGroup>
 		<None Update="lang\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+		<Reference Include="WardenService">
+			<HintPath>..\..\WardenService.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 
 </Project>
