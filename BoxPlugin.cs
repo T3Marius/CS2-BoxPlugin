@@ -16,7 +16,7 @@ namespace BoxPlugin
     {
         public override string ModuleName => "cs2-box";
         public override string ModuleAuthor => "T3Marius";
-        public override string ModuleVersion => "1.0.0";
+        public override string ModuleVersion => "1.0.1";
 
         private bool isFriendlyFireForTerroristsActive = false;
 
