@@ -1,5 +1,5 @@
 # CS2-BoxPlugin
-CS2 BoxPlugin perfect for JailBreak servers, the commands only works for Counter Strike Team. 
+CS2 BoxPlugin module for @exkludera fork Jailbreak plugin: https://github.com/exkludera/cs2-jailbreak
 # Commands
 ```
 css_ding (that's a fake box so you can prank em :D)
